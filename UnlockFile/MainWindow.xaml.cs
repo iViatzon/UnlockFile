@@ -96,26 +96,9 @@ public sealed partial class MainWindow : Window
 
         static (string fileName, string arguments) SplitCommandLine(string command)
         {
-            var isQuoted = false;
-            var i = 0;
-            for (; i < command.Length; i++)
-            {
-                switch (command[i])
-                {
-                    case ' ':
-                        if (!isQuoted)
-                        {
-                            return (command[..i].Trim('"'), command[i..].TrimStart());
-                        }
-                        break;
+            var arr = command.Trim().Split(command.Trim()[0] == '"' ? '"' : ' ', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                    case '"':
-                        isQuoted = !isQuoted;
-                        break;
-                }
-            }
-
-            return (command[..i].Trim('"'), command[i..]);
+            return arr.Length > 1 ? (arr[0], arr[1]) : (arr[0], string.Empty);
         }
     }
 
