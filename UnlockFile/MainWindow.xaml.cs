@@ -87,10 +87,10 @@ public sealed partial class MainWindow : Window
     private void MenuItemRestartAsAdmin_Click(object sender, RoutedEventArgs e)
     {
         string commandLine;
-        using (var searcher = new ManagementObjectSearcher("SELECT Name, CommandLine FROM Win32_Process WHERE ProcessId = " + Process.GetCurrentProcess().Id))
+        using (var searcher = new ManagementObjectSearcher($"SELECT Name, CommandLine FROM Win32_Process WHERE ProcessId = {Environment.ProcessId}"))
         using (var objects = searcher.Get())
         {
-            commandLine = objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString();
+            commandLine = objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString() ?? string.Empty;
         }
 
         var (fileName, arguments) = SplitCommandLine(commandLine);
@@ -116,7 +116,7 @@ public sealed partial class MainWindow : Window
                     case ' ':
                         if (!isQuoted)
                         {
-                            return (command.Substring(0, i).Trim('"'), command.Substring(i).TrimStart());
+                            return (command[..i].Trim('"'), command[i..].TrimStart());
                         }
                         break;
 
@@ -126,7 +126,7 @@ public sealed partial class MainWindow : Window
                 }
             }
 
-            return (command.Substring(0, i).Trim('"'), command.Substring(i));
+            return (command[..i].Trim('"'), command[i..]);
         }
     }
 
@@ -140,7 +140,7 @@ public sealed partial class MainWindow : Window
     private static bool IsShellIntegrationPresent()
     {
         using var key = Registry.CurrentUser.OpenSubKey("Software\\Classes\\*\\shell\\UnlockFile", writable: false);
-        return key != null;
+        return key is not null;
     }
 
     private void MenuItemAddShellIntegration_Click(object sender, RoutedEventArgs e)
@@ -149,7 +149,7 @@ public sealed partial class MainWindow : Window
         reg.SetValue("", "Unlock File");
 
         using var command = reg.CreateSubKey("command");
-        command.SetValue("", $"\"{Process.GetCurrentProcess().MainModule.FileName}\" \"%1\"");
+        command.SetValue("", $@"""{Environment.ProcessPath}"" ""%1""");
 
         UpdateShellIntegrationMenuItems();
     }
@@ -172,8 +172,7 @@ public sealed partial class MainWindow : Window
 
     private void ExecuteDeleteCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
     {
-        var process = ListViewProcess.SelectedItem as Process;
-        if (process == null)
+        if (ListViewProcess.SelectedItem is not Process process)
             return;
 
         var result = MessageBox.Show($"Are you sure you want to kill the process {process.ProcessName}?", "Kill process?", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
