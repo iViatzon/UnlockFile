@@ -1,11 +1,10 @@
 ﻿using System.Windows;
 
-namespace UnlockFile
+namespace UnlockFile;
+
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public sealed partial class App : Application
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public sealed partial class App : Application
-    {
-    }
 }
