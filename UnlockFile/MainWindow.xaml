@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Unlock File" Height="450" Width="800">
+    
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Open" Executed="ExecuteOpenCommand"/>
         <CommandBinding Command="ApplicationCommands.Delete" Executed="ExecuteDeleteCommand"/>
@@ -29,9 +30,7 @@
         </Menu>
 
         <Grid Grid.Row="1">
-            <Grid.Resources>
-
-            </Grid.Resources>
+            <Grid.Resources />
             <ListView x:Name="ListViewProcess">
                 <ListView.InputBindings>
                     <KeyBinding Key="Delete" Command="ApplicationCommands.Delete" />

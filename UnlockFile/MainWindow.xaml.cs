@@ -12,11 +12,11 @@ namespace UnlockFile;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private const string DefaultTitle = "Unlock File";
+    private const string defaultTitle = "Unlock File";
 
     public MainWindow()
     {
-        Title = DefaultTitle;
+        Title = defaultTitle;
         InitializeComponent();
         MenuItemRestartAsAdmin.IsEnabled = CanRunAsAdmin();
         UpdateShellIntegrationMenuItems();
@@ -26,26 +26,21 @@ public sealed partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         var arg = Environment.GetCommandLineArgs().LastOrDefault();
-        if (!string.IsNullOrEmpty(arg))
-        {
-            OpenPath(arg);
-        }
+
+        if (!string.IsNullOrEmpty(arg)) OpenPath(arg);
     }
 
-    private void MenuItemExit_Click(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
+    private void MenuItemExit_Click(object sender, RoutedEventArgs e) => Close();
 
     private void OpenPath(string path)
     {
         if (!File.Exists(path))
         {
-            MessageBox.Show(path + " is not a valid file path");
+            MessageBox.Show($"'{path}' is not a valid file path.");
             return;
         }
 
-        Title = DefaultTitle + " - " + path;
+        Title = $"{defaultTitle} - {path}";
         ListViewProcess.Items.Clear();
 
         try
@@ -55,7 +50,7 @@ public sealed partial class MainWindow : Window
             var processes = session.GetProcessesLockingResources();
             if (processes.Count == 0)
             {
-                MessageBox.Show("The file is not locked");
+                MessageBox.Show("The file is not locked.");
             }
             else
             {
@@ -67,21 +62,15 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show("An error occured: " + ex);
+            MessageBox.Show($"An error occured: {ex.Message}");
         }
     }
 
     private static bool CanRunAsAdmin()
     {
-        using (var token = AccessToken.OpenCurrentProcessToken(TokenAccessLevels.Query))
-        {
-            if (token.GetElevationType() == TokenElevationType.Limited)
-            {
-                return true;
-            }
-        }
+        using var token = AccessToken.OpenCurrentProcessToken(TokenAccessLevels.Query);
 
-        return false;
+        return token.GetElevationType() == TokenElevationType.Limited;
     }
 
     private void MenuItemRestartAsAdmin_Click(object sender, RoutedEventArgs e)
@@ -90,7 +79,7 @@ public sealed partial class MainWindow : Window
         using (var searcher = new ManagementObjectSearcher($"SELECT Name, CommandLine FROM Win32_Process WHERE ProcessId = {Environment.ProcessId}"))
         using (var objects = searcher.Get())
         {
-            commandLine = objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"]?.ToString() ?? string.Empty;
+            commandLine = objects.Cast<ManagementBaseObject>().SingleOrDefault()?["CommandLine"].ToString() ?? string.Empty;
         }
 
         var (fileName, arguments) = SplitCommandLine(commandLine);
@@ -164,10 +153,8 @@ public sealed partial class MainWindow : Window
     private void ExecuteOpenCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
     {
         var dialog = new OpenFileDialog();
-        if (dialog.ShowDialog() == true)
-        {
-            OpenPath(dialog.FileName);
-        }
+
+        if (dialog.ShowDialog() == true) OpenPath(dialog.FileName);
     }
 
     private void ExecuteDeleteCommand(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
